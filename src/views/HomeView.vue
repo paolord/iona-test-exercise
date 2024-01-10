@@ -1,30 +1,37 @@
 <script setup lang="ts">
+  import { useRoute } from 'vue-router';
   import { onBeforeMount, reactive } from 'vue'
   import { catBreeds, catImages } from '@/api/cats'
 
-  const state = reactive({ breeds: [], selectedBreed: '', images: [], page: 1, loadMore: true })
+  const route = useRoute()
+
+  const state: any = reactive({ breeds: [], selectedBreed: '', images: [], page: 1, loadMore: true })
   async function getCatBreeds() {
     state.breeds = await catBreeds()
   }
   onBeforeMount(() => {
     getCatBreeds()
+    if (route.query.breed) {
+      loadImages(route.query.breed)
+    }
   });
 
-  async function selectHandler(e: any) {
-    // console.log('selected', e.currentTarget.value)
+  async function loadImages(breedId: any) {
     state.loadMore = true
     state.page = 1
-    state.selectedBreed = e.currentTarget.value
-    state.images = await catImages(e.currentTarget.value, state.page)
+    state.selectedBreed = breedId
+    state.images = await catImages(breedId, state.page)
+  }
+
+  async function selectHandler(e: any) {
+    await loadImages(e.currentTarget.value)
   }
 
   async function handleLoadMore() {
-    // console.log('selected', e.currentTarget.value)
     state.page += 1
     let images = await catImages(state.selectedBreed, state.page)
-    console.log('old', state.images);
-    console.log('new', images);
-    images = images.reduce((collected, image) => {
+    
+    images = images.reduce((collected: any[], image: any) => {
       console.log(state.images.find((i: any) => i.id === image.id))
       if (typeof state.images.find((i: any) => i.id === image.id) === 'undefined') {
         collected.push(image);
@@ -52,7 +59,7 @@
           </label>
           <select id="breed" class="form-control" @change="selectHandler">
             <option value="">Select breed</option>
-            <option :key="breed.id" v-for="breed in state.breeds" :value="breed.id">
+            <option :key="breed.id" v-for="breed in state.breeds" :value="breed.id" :selected="breed.id === state.selectedBreed">
               {{ breed.name }}
             </option>
           </select>
@@ -69,7 +76,7 @@
             class="mb-2"
           >
 
-            <b-button href="#" variant="primary">View details</b-button>
+            <b-button :href="'/cats/'+image.id" variant="primary">View details</b-button>
           </b-card>
         </b-col>
       </b-row>
@@ -81,27 +88,3 @@
     </b-container>
   </main>
 </template>
-
-<!-- <script lang="ts">
- import { defineComponent } from 'vue'
-import type { onMounted } from 'vue';
-  type GetProductsType = {
-
-  }
-
-  export default defineComponent({
-    data() {
-      return {
-        breeds: [],
-      }
-    },
-    created() {
-      this.getProducts()
-    },
-    methods: {
-      async getProducts()  {
-        this.breeds = await catBreeds()
-      },
-    },
-  })
-</script> -->
