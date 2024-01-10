@@ -1,28 +1,30 @@
 <script setup lang="ts">
-  import { useRoute } from 'vue-router';
+  import { useRoute } from 'vue-router'
   import { onBeforeMount, reactive } from 'vue'
   import { catSingle } from '@/api/cats'
-
-  const state: any = reactive({ image: '', name: '', origin: '', temperament: '', description: '', breedId: '' })
+  import Loader from '@/components/LoaderComponent.vue'
+ 
+  const state: any = reactive({ image: '', name: '', origin: '', temperament: '', description: '', breedId: '', loading: true })
 
   const route = useRoute()
 
   async function getCatSingle() {
     const res = await catSingle(route.params.id)
-    const { url, breeds } = res;
-    state.image = url;
+    const { url, breeds } = res
+    state.image = url
     const {name, origin, temperament, description, id} = breeds[0]
     state.name = name
     state.origin = origin
     state.temperament = temperament
     state.description = description
     state.breedId = id
+    state.loading = false
   }
   onBeforeMount(() => {
     getCatSingle()
-  });
+  })
+  /* @ts-ignore */
 </script>
-
 <template>
   <main>
     <b-container>
@@ -32,8 +34,9 @@
           </b-col>
         </b-row>
         <b-row>
-          <b-col>            
-            <b-card>          
+          <b-col>
+            <Loader v-if="state.loading" />            
+            <b-card v-else>          
               <b-card-img :src="state.image" alt="Image" bottom></b-card-img>
               <div class="card-body">
                 <h4>{{state.name}}</h4>
