@@ -38,7 +38,6 @@
     let images = await catImages(state.selectedBreed, state.page)
     
     images = images.reduce((collected: any[], image: any) => {
-      console.log(state.images.find((i: any) => i.id === image.id))
       if (typeof state.images.find((i: any) => i.id === image.id) === 'undefined') {
         collected.push(image)
       }
